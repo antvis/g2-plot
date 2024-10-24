@@ -26,4 +26,18 @@ export class DualAxes extends Plot<DualAxesOptions> {
   protected getSchemaAdaptor(): Adaptor<DualAxesOptions> {
     return adaptor;
   }
+
+  /**
+   * 覆写父类的方法
+   */
+  protected triggerResize() {
+    if (!this.chart.destroyed) {
+      // 首先自适应容器的宽高
+      this.chart.forceFit(); // g2 内部执行 changeSize，changeSize 中执行 render(true)
+      this.chart.clear();
+      this.execAdaptor(); // 核心：宽高更新之后计算padding
+      // 渲染
+      this.chart.render(true);
+    }
+  }
 }
