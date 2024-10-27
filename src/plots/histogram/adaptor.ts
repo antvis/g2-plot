@@ -3,7 +3,7 @@ import { interval } from '../../adaptor/geometries';
 import { pattern } from '../../adaptor/pattern';
 import { Params } from '../../core/adaptor';
 import { deepAssign, findGeometry, flow, transformLabel } from '../../utils';
-import { binHistogram } from '../../utils/transform/histogram';
+import { binHistogram, calculateBinWidth } from '../../utils/transform/histogram';
 import { HISTOGRAM_X_FIELD, HISTOGRAM_Y_FIELD } from './constant';
 import { HistogramOptions } from './types';
 
@@ -51,12 +51,19 @@ function geometry(params: Params<HistogramOptions>): Params<HistogramOptions> {
  */
 function meta(params: Params<HistogramOptions>): Params<HistogramOptions> {
   const { options } = params;
-  const { xAxis, yAxis } = options;
+  const { data, binField, binWidth, binNumber, xAxis, yAxis } = options;
+
+  const { binWidth: _binWidth } = calculateBinWidth(data, binField, binWidth, binNumber);
 
   return flow(
     scale({
       [HISTOGRAM_X_FIELD]: xAxis,
       [HISTOGRAM_Y_FIELD]: yAxis,
+    }, {
+      [HISTOGRAM_X_FIELD]: {
+        // 分箱宽度和刻度线宽度默认保持一致
+        tickInterval: _binWidth,
+      },
     })
   )(params);
 }

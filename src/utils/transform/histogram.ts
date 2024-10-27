@@ -23,15 +23,9 @@ function getBinKey(value: number, binWidth: number, binNumber?: number): [number
 function sturges(values: Array<number>): number {
   return Math.ceil(Math.log(values.length) / Math.LN2) + 1;
 }
-/**
- * 对数据进行百分比化
- * @param data
- * @param binField
- * @param binWidth
- * @param binNumber
- * @param stackField
- */
-export function binHistogram(data: Data, binField: string, binWidth: number, binNumber?: number, stackField?: string) {
+
+// 计算 binWidth
+export function calculateBinWidth(data: Data, binField: string, binWidth: number, binNumber?: number) {
   const originData_copy = clone(data);
 
   // 根据 binField 对源数据进行排序
@@ -52,12 +46,29 @@ export function binHistogram(data: Data, binField: string, binWidth: number, bin
     const _defaultBinNumber = sturges(values);
     _binWidth = rangeWidth / _defaultBinNumber;
   }
+  return {
+    binWidth: _binWidth,
+    sortData: originData_copy,
+  };
+}
+
+/**
+ * 对数据进行百分比化
+ * @param data
+ * @param binField
+ * @param binWidth
+ * @param binNumber
+ * @param stackField
+ */
+export function binHistogram(data: Data, binField: string, binWidth: number, binNumber?: number, stackField?: string) {
+  const { binWidth: _binWidth, sortData } = calculateBinWidth(data, binField, binWidth, binNumber);
+
   // 构建 key - StatisticData 结构
   const bins: StatisticBin = {};
-  const groups = groupBy(originData_copy, stackField);
+  const groups = groupBy(sortData, stackField);
   // 判断分组是否为空，如果为空，说明没有 stackField 字段
   if (isEmpty(groups)) {
-    each(originData_copy, (data: any) => {
+    each(sortData, (data: any) => {
       const value = data[binField];
       const bin = getBinKey(value, _binWidth, binNumber);
       const binKey = `${bin[0]}-${bin[1]}`;

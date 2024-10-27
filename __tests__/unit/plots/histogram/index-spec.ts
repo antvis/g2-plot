@@ -36,6 +36,8 @@ describe('histogram', () => {
       },
     });
     // @ts-ignore
+    expect(histogram.chart.options.scales.range.tickInterval).toEqual(2);
+    // @ts-ignore
     expect(histogram.chart.options.axes.range).toEqual({
       nice: true,
       label: {
@@ -68,6 +70,9 @@ describe('histogram', () => {
     const shapes = geometry.getShapes();
 
     expect(shapes.length).toBe(4);
+
+    // @ts-ignore
+    expect(histogram.chart.options.scales.range.tickInterval).toEqual(7.3999999999999995);
 
     histogram.destroy();
   });
